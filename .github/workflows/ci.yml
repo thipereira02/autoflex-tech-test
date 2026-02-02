@@ -30,4 +30,4 @@ jobs:
         java -version
         node -v
         docker --version
-        docker-compose --version
+        docker compose version
