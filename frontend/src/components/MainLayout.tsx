@@ -1,47 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, LogOut, Sun, Moon, Menu, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, LogOut, Sun, Moon, Menu, ChevronLeft, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export function MainLayout() {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   
-  // Controle do Sidebar
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
+  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="flex min-h-screen transition-colors duration-300 relative">
-      
-      {/* Sidebar Lateral */}
+    <div className="flex min-h-screen transition-colors duration-300 relative bg-slate-50 dark:bg-slate-950">
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       <aside 
-        className={`${
-          isSidebarOpen ? 'w-72' : 'w-20'
-        } bg-slate-900 text-white flex flex-col fixed h-full z-30 shadow-2xl transition-all duration-300 ease-in-out border-r border-slate-800`}
+        className={`
+          bg-slate-900 text-white flex flex-col fixed h-full z-50 shadow-2xl transition-all duration-300 ease-in-out border-r border-slate-800
+          
+          /* Comportamento Mobile */
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+          w-72 
+          
+          /* Comportamento Desktop (md:...) */
+          md:translate-x-0 
+          ${isDesktopSidebarOpen ? 'md:w-72' : 'md:w-20'}
+        `}
       >
-        {/* Header da Sidebar (Logo + Toggle) */}
-        {/* Lógica: Se fechado, centraliza o botão. Se aberto, espaça entre logo e botão. */}
-        <div className={`h-24 flex items-center shrink-0 transition-all duration-300 ${
-          isSidebarOpen ? 'justify-between px-6' : 'justify-center'
+        <div className={`h-20 flex items-center shrink-0 transition-all duration-300 ${
+          isDesktopSidebarOpen ? 'justify-between px-6' : 'md:justify-center px-4 justify-between'
         }`}>
           
           <div className={`transition-all duration-300 overflow-hidden flex items-center gap-3 ${
-            isSidebarOpen ? 'w-auto opacity-100' : 'w-0 opacity-0 hidden'
+            !isDesktopSidebarOpen && 'md:hidden'
           }`}>
             <img 
               src="/img.png" 
-              alt="Autoflex Logo" 
-              className="h-50 w-50 object-contain" 
+              alt="Logo" 
+              className="h-30 w-30 object-contain" 
             />
           </div>
 
           <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                setIsMobileMenuOpen(false);
+              } else {
+                setIsDesktopSidebarOpen(!isDesktopSidebarOpen);
+              }
+            }}
             className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
-            {isSidebarOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
+            <span className="md:hidden"><X size={24} /></span>
+            <span className="hidden md:block">
+              {isDesktopSidebarOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
+            </span>
           </button>
         </div>
 
@@ -51,14 +76,14 @@ export function MainLayout() {
             icon={<LayoutDashboard size={24} />} 
             label="Dashboard" 
             isActive={isActive('/')} 
-            isOpen={isSidebarOpen} 
+            isExpanded={isDesktopSidebarOpen} 
           />
           <NavItem 
             to="/products" 
             icon={<Package size={24} />} 
             label="Produtos" 
             isActive={isActive('/products')} 
-            isOpen={isSidebarOpen} 
+            isExpanded={isDesktopSidebarOpen} 
           />
         </nav>
 
@@ -68,14 +93,14 @@ export function MainLayout() {
             icon={<Settings size={24} />} 
             label="Configurações" 
             isActive={false} 
-            isOpen={isSidebarOpen} 
+            isExpanded={isDesktopSidebarOpen} 
           />
            <button className={`w-full flex items-center gap-3 py-3 rounded-xl text-sm font-medium transition-all group text-red-400 hover:text-red-300 hover:bg-red-900/20 relative overflow-hidden
-             ${isSidebarOpen ? 'pl-5' : 'pl-[1.4rem]'}
+             ${isDesktopSidebarOpen ? 'pl-5' : 'md:pl-[1.35rem] pl-5'}
            `}>
             <LogOut size={24} className="shrink-0" />
             <span className={`transition-all duration-300 whitespace-nowrap ${
-              isSidebarOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10 absolute'
+              isDesktopSidebarOpen ? 'opacity-100 translate-x-0' : 'md:opacity-0 md:translate-x-10 md:absolute opacity-100 translate-x-0'
             }`}>
               Sair
             </span>
@@ -83,17 +108,31 @@ export function MainLayout() {
         </div>
       </aside>
 
-      <main className={`flex-1 transition-all duration-300 flex flex-col min-w-0 ${isSidebarOpen ? 'ml-72' : 'ml-20'}`}>
+      <main className={`
+        flex-1 transition-all duration-300 flex flex-col min-w-0
+        /* No mobile, margem zero (menu é overlay) */
+        ml-0 
+        /* No desktop, margem igual à largura da sidebar */
+        ${isDesktopSidebarOpen ? 'md:ml-72' : 'md:ml-20'}
+      `}>
         
-        <header className="h-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-20 transition-colors duration-300">
-          
-          <div className="flex flex-col justify-center">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white leading-tight">
-              Olá, <span className="text-blue-600 dark:text-blue-400">bem-vindo!</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
-              Visão geral da sua operação hoje.
-            </p>
+        <header className="h-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30 transition-colors duration-300">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+            >
+              <Menu size={24} />
+            </button>
+
+            <div className="flex flex-col justify-center">
+              <h2 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white leading-tight">
+                Olá, <span className="text-blue-600 dark:text-blue-400">bem-vindo!</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
+                Visão geral da sua operação hoje.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
@@ -123,7 +162,7 @@ export function MainLayout() {
   );
 }
 
-function NavItem({ to, icon, label, isActive, isOpen }: any) {
+function NavItem({ to, icon, label, isActive, isExpanded }: any) {
   return (
     <Link
       to={to}
@@ -132,22 +171,27 @@ function NavItem({ to, icon, label, isActive, isOpen }: any) {
           ? 'text-white bg-white/10 border-r-4 border-blue-500' 
           : 'text-slate-400 hover:text-white hover:bg-white/5'
         }
-        /* AQUI ESTÁ A MÁGICA: Padding dinâmico */
-        ${isOpen ? 'pl-6' : 'pl-[1.75rem]'}
+        /* Padding Responsivo: 
+           - Mobile: Sempre pl-6 (menu largo)
+           - Desktop: pl-6 se expandido, centralizado se recolhido */
+        pl-6
+        ${!isExpanded && 'md:pl-[1.75rem]'}
       `}
     >
       <div className={`shrink-0 transition-transform duration-300 ${!isActive && 'group-hover:scale-110'}`}>
         {icon}
       </div>
       
-      <span className={`whitespace-nowrap transition-all duration-300 origin-left ${
-        isOpen ? 'opacity-100 translate-x-0 w-auto' : 'opacity-0 translate-x-4 w-0'
-      }`}>
+      <span className={`whitespace-nowrap transition-all duration-300 origin-left 
+        opacity-100 translate-x-0 w-auto
+        /* No Desktop recolhido, esconde o texto */
+        ${!isExpanded && 'md:opacity-0 md:translate-x-4 md:w-0'}
+      `}>
         {label}
       </span>
 
-      {!isOpen && (
-        <div className="absolute left-16 ml-4 px-3 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap border border-slate-700 shadow-xl translate-x-2 group-hover:translate-x-0">
+      {!isExpanded && (
+        <div className="hidden md:block absolute left-16 ml-4 px-3 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap border border-slate-700 shadow-xl translate-x-2 group-hover:translate-x-0">
           {label}
         </div>
       )}
