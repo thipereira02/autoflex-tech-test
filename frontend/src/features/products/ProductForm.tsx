@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import type { Product } from '../../types/product';
@@ -6,13 +6,21 @@ import type { Product } from '../../types/product';
 interface ProductFormProps {
   onSuccess: () => void;
   onCancel: () => void;
+  initialData?: Product;
 }
 
-export function ProductForm({ onSuccess, onCancel }: ProductFormProps) {
+export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormProps) {
   const [name, setName] = useState('');
   const [sellingPrice, setSellingPrice] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (initialData) {
+      setName(initialData.name);
+      setSellingPrice(initialData.sellingPrice.toString().replace('.', ','));
+    }
+  }, [initialData]);
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
@@ -32,12 +40,16 @@ export function ProductForm({ onSuccess, onCancel }: ProductFormProps) {
     try {
       setIsSubmitting(true);
       
-      const newProduct: Product = {
+      const productData: Product = {
         name: name,
         sellingPrice: priceNumber
       };
 
-      await productService.create(newProduct);
+      if (initialData && initialData.id) {
+        await productService.update(initialData.id, productData);
+      } else {
+        await productService.create(productData);
+      }
       
       onSuccess();
     } catch (err) {
@@ -52,17 +64,16 @@ export function ProductForm({ onSuccess, onCancel }: ProductFormProps) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
         
-        {/* Header */}
         <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="font-semibold text-slate-800 text-lg">Novo Produto</h3>
+          <h3 className="font-semibold text-slate-800 text-lg">
+            {initialData ? 'Editar Produto' : 'Novo Produto'}
+          </h3>
           <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 transition-colors">
             <X size={20} />
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
           {error && (
             <div className="p-3 bg-red-50 text-red-600 text-sm rounded border border-red-100">
               {error}
@@ -78,7 +89,7 @@ export function ProductForm({ onSuccess, onCancel }: ProductFormProps) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               placeholder="Ex: Teclado Mecânico"
               autoFocus
             />
@@ -95,7 +106,7 @@ export function ProductForm({ onSuccess, onCancel }: ProductFormProps) {
               min="0.01"
               value={sellingPrice}
               onChange={(e) => setSellingPrice(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               placeholder="0,00"
             />
           </div>
@@ -112,19 +123,10 @@ export function ProductForm({ onSuccess, onCancel }: ProductFormProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                <>
-                  <Save size={16} />
-                  Salvar Produto
-                </>
-              )}
+              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              {initialData ? 'Salvar Alterações' : 'Criar Produto'}
             </button>
           </div>
         </form>

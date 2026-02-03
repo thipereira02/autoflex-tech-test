@@ -9,7 +9,9 @@ export function ProductList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Controle do Modal e Edição
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
 
   useEffect(() => {
     loadProducts();
@@ -28,6 +30,29 @@ export function ProductList() {
       setLoading(false);
     }
   }
+
+  const handleNew = () => {
+    setEditingProduct(undefined);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setIsFormOpen(true);
+  };
+
+  // EXCLUIR
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Tem certeza que deseja excluir este produto?')) return;
+
+    try {
+      await productService.delete(id);
+      loadProducts();
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao excluir produto.');
+    }
+  };
 
   const handleSuccess = () => {
     setIsFormOpen(false);
@@ -59,7 +84,7 @@ export function ProductList() {
           </h2>
           
           <button 
-            onClick={() => setIsFormOpen(true)}
+            onClick={handleNew}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
           >
             <Plus size={18} />
@@ -104,10 +129,18 @@ export function ProductList() {
                       {formatMoney(product.sellingPrice)}
                     </td>
                     <td className="px-6 py-4 text-right flex justify-end gap-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Editar">
+                      <button 
+                        onClick={() => handleEdit(product)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors" 
+                        title="Editar"
+                      >
                         <Edit size={18} />
                       </button>
-                      <button className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors" title="Excluir">
+                      <button 
+                        onClick={() => handleDelete(product.id!)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors" 
+                        title="Excluir"
+                      >
                         <Trash2 size={18} />
                       </button>
                     </td>
@@ -122,7 +155,8 @@ export function ProductList() {
       {isFormOpen && (
         <ProductForm 
           onSuccess={handleSuccess} 
-          onCancel={() => setIsFormOpen(false)} 
+          onCancel={() => setIsFormOpen(false)}
+          initialData={editingProduct}
         />
       )}
     </>

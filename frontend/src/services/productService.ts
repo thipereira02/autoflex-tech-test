@@ -14,6 +14,11 @@ export const productService = {
     return response.data;
   },
 
+  update: async (id: number, product: Product): Promise<Product> => {
+    const response = await axios.put<Product>(`${API_URL}/${id}`, product);
+    return response.data;
+  },
+
   delete: async (id: number): Promise<void> => {
     await axios.delete(`${API_URL}/${id}`);
   }
