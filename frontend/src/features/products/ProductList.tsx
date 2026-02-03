@@ -9,7 +9,6 @@ export function ProductList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Controle do Modal e Edição
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
 
