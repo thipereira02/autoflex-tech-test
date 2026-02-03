@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
-import { productService } from '../../services/productService';
+import { useAppDispatch } from '../../store/hooks';
+import { addProduct, updateProduct } from '../../store/productsSlice';
 import type { Product } from '../../types/product';
 
 interface ProductFormProps {
@@ -10,6 +11,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormProps) {
+  const dispatch = useAppDispatch();
   const [name, setName] = useState('');
   const [sellingPrice, setSellingPrice] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,91 +24,84 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
     }
   }, [initialData]);
 
-  async function handleSubmit(e: React.SyntheticEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
 
     if (!name.trim()) {
-      setError('O nome do produto é obrigatório.');
+      setError('O nome é obrigatório.');
       return;
     }
 
     const priceNumber = parseFloat(sellingPrice.replace(',', '.'));
     if (isNaN(priceNumber) || priceNumber <= 0) {
-      setError('Informe um preço válido maior que zero.');
+      setError('Preço inválido.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      
-      const productData: Product = {
-        name: name,
-        sellingPrice: priceNumber
-      };
+      const productData: Product = { name: name, sellingPrice: priceNumber };
 
       if (initialData && initialData.id) {
-        await productService.update(initialData.id, productData);
+        await dispatch(updateProduct({ id: initialData.id, data: productData })).unwrap();
       } else {
-        await productService.create(productData);
+        await dispatch(addProduct(productData)).unwrap();
       }
       
       onSuccess();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Erro ao salvar produto. Tente novamente.');
+      setError('Erro ao salvar. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border border-slate-200 dark:border-slate-800">
         
-        <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="font-semibold text-slate-800 text-lg">
+        <div className="bg-slate-50 dark:bg-slate-900 px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-lg">
             {initialData ? 'Editar Produto' : 'Novo Produto'}
           </h3>
-          <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 text-red-600 text-sm rounded border border-red-100">
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded border border-red-100 dark:border-red-800">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Nome do Produto
             </label>
             <input
-              id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
               placeholder="Ex: Teclado Mecânico"
               autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="price" className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Preço de Venda (R$)
             </label>
             <input
-              id="price"
               type="number"
               step="0.01"
-              min="0.01"
               value={sellingPrice}
               onChange={(e) => setSellingPrice(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
               placeholder="0,00"
             />
           </div>
@@ -115,7 +110,7 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 transition-colors font-medium text-sm"
+              className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium text-sm"
               disabled={isSubmitting}
             >
               Cancelar
@@ -123,10 +118,10 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
             >
               {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              {initialData ? 'Salvar Alterações' : 'Criar Produto'}
+              Salvar
             </button>
           </div>
         </form>

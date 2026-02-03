@@ -1,16 +1,21 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './components/ThemeProvider';
+import { MainLayout } from './components/MainLayout';
+import { Dashboard } from './features/dashboards/Dashboard';
 import { ProductList } from './features/products/ProductList';
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-slate-800 mb-8">
-          Autoflex Stock Manager 🚀
-        </h1>
-        
-        <ProductList />
-      </div>
-    </div>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="products" element={<ProductList />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
