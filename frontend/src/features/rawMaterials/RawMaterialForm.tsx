@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { X, Save, Loader2 } from 'lucide-react';
 import { useAppDispatch } from '../../store/hooks';
 import { addRawMaterial, updateRawMaterial } from '../../store/rawMaterialsSlice';
@@ -16,7 +17,6 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('UN');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (initialData) {
@@ -28,16 +28,15 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
-    setError('');
 
     if (!name.trim()) {
-      setError('O nome é obrigatório.');
+      toast.warning('O nome é obrigatório.');
       return;
     }
 
     const qtdNumber = parseFloat(quantity);
     if (isNaN(qtdNumber) || qtdNumber < 0) {
-      setError('Quantidade inválida.');
+      toast.warning('Quantidade inválida.');
       return;
     }
 
@@ -51,13 +50,15 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
 
       if (initialData && initialData.id) {
         await dispatch(updateRawMaterial({ id: initialData.id, data })).unwrap();
+        toast.success('Insumo atualizado com sucesso!');
       } else {
         await dispatch(addRawMaterial(data)).unwrap();
+        toast.success('Insumo cadastrado com sucesso!');
       }
       onSuccess();
     } catch (err) {
       console.error(err);
-      setError('Erro ao salvar.');
+      toast.error('Erro ao salvar insumo.');
     } finally {
       setIsSubmitting(false);
     }
@@ -77,12 +78,6 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded border border-red-100 dark:border-red-800">
-              {error}
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Nome

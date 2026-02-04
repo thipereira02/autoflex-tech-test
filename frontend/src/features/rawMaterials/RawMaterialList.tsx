@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trash2, Edit, Layers, AlertCircle, Plus, Search } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { fetchRawMaterials, deleteRawMaterial } from '../../store/rawMaterialsSlice';
 import type { RawMaterial } from '../../types/rawMaterial';
@@ -21,8 +22,16 @@ export function RawMaterialList() {
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja excluir este insumo?')) return;
-    dispatch(deleteRawMaterial(id));
+
+    try {
+      await dispatch(deleteRawMaterial(id)).unwrap(); 
+      toast.success('Insumo removido com sucesso!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Não foi possível remover o insumo.');
+    }
   };
+  // --------------------------------------
 
   const handleEdit = (item: RawMaterial) => {
     setEditingItem(item);
@@ -34,11 +43,14 @@ export function RawMaterialList() {
     setIsFormOpen(true);
   };
 
-  const filteredItems = items.filter(i => 
+  // Proteção extra para garantir que é array (igual fizemos em produtos)
+  const safeItems = Array.isArray(items) ? items : [];
+
+  const filteredItems = safeItems.filter(i => 
     i.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (status === 'loading' && !items.length) {
+  if (status === 'loading' && !safeItems.length) {
     return (
       <div className="flex justify-center items-center h-64 text-slate-400">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>

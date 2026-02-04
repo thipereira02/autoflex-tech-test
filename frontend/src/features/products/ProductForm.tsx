@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { X, Save, Loader2, Plus, Trash2, ChefHat } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { addProduct, updateProduct } from '../../store/productsSlice';
@@ -21,7 +22,6 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
   const [composition, setComposition] = useState<ProductComposition[]>([]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     dispatch(fetchRawMaterials());
@@ -65,14 +65,23 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
-    setError('');
 
-    if (!name.trim()) return setError('Nome é obrigatório');
+    if (!name.trim()) {
+        toast.warning('Nome é obrigatório');
+        return;
+    }
+
     const priceNum = parseFloat(price);
-    if (isNaN(priceNum) || priceNum < 0) return setError('Preço inválido');
+    if (isNaN(priceNum) || priceNum < 0) {
+        toast.warning('Preço inválido');
+        return;
+    }
 
     const invalidIngredients = composition.some(c => c.requiredQuantity <= 0);
-    if (invalidIngredients) return setError('Existem ingredientes com quantidade zero ou negativa.');
+    if (invalidIngredients) {
+        toast.warning('Existem ingredientes com quantidade zero ou negativa.');
+        return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -85,13 +94,17 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
 
       if (initialData && initialData.id) {
         await dispatch(updateProduct({ id: initialData.id, data: productData })).unwrap();
+        toast.success('Produto atualizado com sucesso!');
       } else {
         await dispatch(addProduct(productData)).unwrap();
+        toast.success('Produto criado com sucesso!');
       }
+      
       onSuccess();
+
     } catch (err) {
       console.error(err);
-      setError('Erro ao salvar produto.');
+      toast.error('Erro ao salvar produto. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -111,12 +124,6 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1">
-          {error && (
-            <div className="p-3 bg-red-50 text-red-600 text-sm rounded border border-red-100">
-              {error}
-            </div>
-          )}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do Produto</label>
