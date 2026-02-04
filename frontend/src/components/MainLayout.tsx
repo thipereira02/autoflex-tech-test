@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, LogOut, Sun, Moon, Menu, ChevronLeft, X } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, LogOut, Sun, Moon, Menu, ChevronLeft, X, Layers } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export function MainLayout() {
@@ -84,6 +84,13 @@ export function MainLayout() {
             label="Produtos" 
             isActive={isActive('/products')} 
             isExpanded={isDesktopSidebarOpen} 
+          />
+          <NavItem 
+            to="/raw-materials" 
+            icon={<Layers size={24} />} 
+            label="Matéria-Prima" 
+            isActive={isActive('/raw-materials')} 
+            isExpanded={isDesktopSidebarOpen}
           />
         </nav>
 
