@@ -33,24 +33,36 @@ public class ProductResource {
 
     @POST
     @Transactional
-    public Response create(@Valid Product product) {
-        if (product.id != null) {
-            throw new WebApplicationException("Id was invalidly set on request.", 422);
+    public Response create(Product product) {
+        if (product.composition != null) {
+            product.composition.forEach(item -> item.product = product);
         }
+        
         product.persist();
-        return Response.status(201).entity(product).build();
+        return Response.status(Response.Status.CREATED).entity(product).build();
     }
 
     @PUT
     @Path("/{id}")
     @Transactional
-    public Product update(@PathParam("id") Long id, @Valid Product product) {
+    public Product update(@PathParam("id") Long id, Product productData) {
         Product entity = Product.findById(id);
         if (entity == null) {
             throw new WebApplicationException("Product not found", 404);
         }
-        entity.name = product.name;
-        entity.sellingPrice = product.sellingPrice;
+        
+        // Atualiza dados básicos
+        entity.name = productData.name;
+        entity.sellingPrice = productData.sellingPrice;
+
+        entity.composition.clear();
+        if (productData.composition != null) {
+            productData.composition.forEach(item -> {
+                item.product = entity;
+                entity.composition.add(item);
+            });
+        }
+        
         return entity;
     }
 
