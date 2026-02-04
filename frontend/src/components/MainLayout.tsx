@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Settings, LogOut, Sun, Moon, Menu, ChevronLeft, X, Layers } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, LogOut, Sun, Moon, Menu, ChevronLeft, X, Layers, Factory } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export function MainLayout() {
@@ -90,6 +90,13 @@ export function MainLayout() {
             icon={<Layers size={24} />} 
             label="Matéria-Prima" 
             isActive={isActive('/raw-materials')} 
+            isExpanded={isDesktopSidebarOpen}
+          />
+          <NavItem 
+            to="/planning" 
+            icon={<Factory size={24} />} 
+            label="Planejamento" 
+            isActive={isActive('/planning')} 
             isExpanded={isDesktopSidebarOpen}
           />
         </nav>

@@ -4,6 +4,7 @@ import { MainLayout } from './components/MainLayout';
 import { Dashboard } from './features/dashboard/Dashboard';
 import { ProductList } from './features/products/ProductList';
 import { RawMaterialList } from './features/rawMaterials/RawMaterialList';
+import { ProductionPlanList } from './features/production/ProductionPlanList';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="products" element={<ProductList />} />
             <Route path="raw-materials" element={<RawMaterialList />} />
+            <Route path="planning" element={<ProductionPlanList />} />
           </Route>
         </Routes>
       </BrowserRouter>
