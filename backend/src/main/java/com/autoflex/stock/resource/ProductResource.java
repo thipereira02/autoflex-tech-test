@@ -1,6 +1,7 @@
 package com.autoflex.stock.resource;
 
 import com.autoflex.stock.entity.Product;
+import com.autoflex.stock.dto.DashboardStats;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.math.BigDecimal;
 
 @Path("/api/products")
 @Produces(MediaType.APPLICATION_JSON)
@@ -61,5 +63,19 @@ public class ProductResource {
             throw new WebApplicationException("Product not found", 404);
         }
         entity.delete();
+    }
+
+    @GET
+    @Path("/stats")
+    public DashboardStats getStats() {
+        long count = Product.count();
+        
+        BigDecimal sum = Product.getEntityManager()
+            .createQuery("SELECT SUM(p.sellingPrice) FROM Product p", BigDecimal.class)
+            .getSingleResult();
+        
+        double totalValue = (sum != null) ? sum.doubleValue() : 0.0;
+        
+        return new DashboardStats(count, totalValue);
     }
 }

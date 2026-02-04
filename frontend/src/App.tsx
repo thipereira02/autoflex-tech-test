@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './components/ThemeProvider';
 import { MainLayout } from './components/MainLayout';
-import { Dashboard } from './features/dashboards/Dashboard';
+import { Dashboard } from './features/dashboard/Dashboard';
 import { ProductList } from './features/products/ProductList';
 
 function App() {

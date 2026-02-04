@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { Product } from '../types/product';
+import type { DashboardStats } from '../types/dashboard';
 
 const API_URL = '/api/products';
 
@@ -21,5 +22,10 @@ export const productService = {
 
   delete: async (id: number): Promise<void> => {
     await axios.delete(`${API_URL}/${id}`);
+  },
+
+  getStats: async (): Promise<DashboardStats> => {
+    const response = await axios.get<DashboardStats>(`${API_URL}/stats`);
+    return response.data;
   }
 };
