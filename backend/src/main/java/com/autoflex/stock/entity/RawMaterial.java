@@ -7,4 +7,5 @@ import jakarta.persistence.Entity;
 public class RawMaterial extends PanacheEntity {
     public String name;
     public double stockQuantity;
+    public String unit;
 }

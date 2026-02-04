@@ -14,6 +14,7 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
   const dispatch = useAppDispatch();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [unit, setUnit] = useState('UN');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,6 +22,7 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
     if (initialData) {
       setName(initialData.name);
       setQuantity(initialData.stockQuantity.toString());
+      setUnit(initialData.unit || 'UN');
     }
   }, [initialData]);
 
@@ -29,19 +31,23 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
     setError('');
 
     if (!name.trim()) {
-      setError('O nome do insumo é obrigatório.');
+      setError('O nome é obrigatório.');
       return;
     }
 
     const qtdNumber = parseFloat(quantity);
     if (isNaN(qtdNumber) || qtdNumber < 0) {
-      setError('Informe uma quantidade válida.');
+      setError('Quantidade inválida.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const data: RawMaterial = { name, stockQuantity: qtdNumber };
+      const data: RawMaterial = { 
+        name, 
+        stockQuantity: qtdNumber, 
+        unit
+      };
 
       if (initialData && initialData.id) {
         await dispatch(updateRawMaterial({ id: initialData.id, data })).unwrap();
@@ -51,7 +57,7 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
       onSuccess();
     } catch (err) {
       console.error(err);
-      setError('Erro ao salvar. Tente novamente.');
+      setError('Erro ao salvar.');
     } finally {
       setIsSubmitting(false);
     }
@@ -79,46 +85,62 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
 
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Nome da Matéria-Prima
+              Nome
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
-              placeholder="Ex: Madeira MDF"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+              placeholder="Ex: Leite"
               autoFocus
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Quantidade em Estoque
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"
-              placeholder="0"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Quantidade
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                placeholder="0"
+              />
+            </div>
+            
+            {/* SELETOR DE UNIDADE */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Unidade
+              </label>
+              <select
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white cursor-pointer"
+              >
+                <option value="UN">un (Unidade)</option>
+                <option value="KG">kg (Quilogramas)</option>
+                <option value="G">g (Gramas)</option>
+                <option value="L">l (Litros)</option>
+                <option value="ML">ml (Mililitros)</option>
+                <option value="M">m (Metros)</option>
+                <option value="M2">m² (Metros Quadrados)</option>
+                <option value="CX">cx (Caixa)</option>
+                <option value="PCT">pct (Pacote)</option>
+                <option value="RL">rl (Rolo)</option>
+              </select>
+            </div>
           </div>
 
           <div className="pt-4 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium text-sm"
-              disabled={isSubmitting}
-            >
+            <button type="button" onClick={onCancel} className="px-4 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium text-sm">
               Cancelar
             </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
-            >
+            <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2">
               {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               Salvar
             </button>

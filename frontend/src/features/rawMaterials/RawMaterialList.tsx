@@ -108,7 +108,7 @@ export function RawMaterialList() {
                       {item.name}
                     </td>
                     <td className="px-6 py-4 text-blue-600 dark:text-blue-400 font-semibold">
-                      {item.stockQuantity} un
+                      {item.stockQuantity} <span className="text-xs text-slate-400 dark:text-slate-500 font-normal ml-1">{item.unit}</span>
                     </td>
                     <td className="px-6 py-4 text-right flex justify-end gap-2">
                       <button 
