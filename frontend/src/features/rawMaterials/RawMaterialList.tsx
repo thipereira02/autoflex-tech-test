@@ -20,18 +20,27 @@ export function RawMaterialList() {
     }
   }, [status, dispatch]);
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Tem certeza que deseja excluir este insumo?')) return;
-
-    try {
-      await dispatch(deleteRawMaterial(id)).unwrap(); 
-      toast.success('Insumo removido com sucesso!');
-    } catch (err) {
-      console.error(err);
-      toast.error('Não foi possível remover o insumo.');
-    }
+  const handleDelete = (item: RawMaterial) => {
+    toast.error(`Excluir insumo "${item.name}"?`, {
+      description: 'Essa ação não poderá ser desfeita.',
+      action: {
+        label: 'Confirmar',
+        onClick: async () => {
+          try {
+            await dispatch(deleteRawMaterial(item.id!)).unwrap();
+            toast.success('Insumo removido.');
+          } catch (err) {
+            toast.error('Erro ao remover insumo.');
+          }
+        },
+      },
+      cancel: {
+        label: 'Cancelar',
+        onClick: () => {},
+      },
+      duration: 5000,
+    });
   };
-  // --------------------------------------
 
   const handleEdit = (item: RawMaterial) => {
     setEditingItem(item);
@@ -43,7 +52,6 @@ export function RawMaterialList() {
     setIsFormOpen(true);
   };
 
-  // Proteção extra para garantir que é array (igual fizemos em produtos)
   const safeItems = Array.isArray(items) ? items : [];
 
   const filteredItems = safeItems.filter(i => 
@@ -130,7 +138,7 @@ export function RawMaterialList() {
                         <Edit size={18} />
                       </button>
                       <button 
-                        onClick={() => handleDelete(item.id!)}
+                        onClick={() => handleDelete(item)}
                         className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" 
                       >
                         <Trash2 size={18} />

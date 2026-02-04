@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Trash2, Edit, Package, AlertCircle, Plus, Search } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { fetchProducts, deleteProduct } from '../../store/productsSlice';
@@ -20,10 +21,27 @@ export function ProductList() {
     }
   }, [status, dispatch]);
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Tem certeza que deseja excluir este produto?')) return;
-    dispatch(deleteProduct(id));
-  };
+  const handleDelete = (product: Product) => {
+    toast.error(`Excluir "${product.name}"?`, {
+      description: 'Essa ação não poderá ser desfeita.',
+      action: {
+        label: 'Excluir',
+        onClick: async () => {
+          try {
+            await dispatch(deleteProduct(product.id!)).unwrap();
+            toast.success('Produto removido.');
+          } catch (error) {
+            toast.error('Erro ao remover produto.');
+          }
+        },
+      },
+      cancel: {
+        label: 'Cancelar',
+        onClick: () => {},
+      },
+      duration: 5000,
+    });
+  };;
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -126,7 +144,7 @@ export function ProductList() {
                         <Edit size={18} />
                       </button>
                       <button 
-                        onClick={() => handleDelete(product.id!)}
+                        onClick={() => handleDelete(product)}
                         className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" 
                       >
                         <Trash2 size={18} />

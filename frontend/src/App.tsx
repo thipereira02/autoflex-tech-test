@@ -11,7 +11,7 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <Toaster position="top-right" richColors expand={true} />
+        <Toaster position="top-center" richColors expand={true} />
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Dashboard />} />
