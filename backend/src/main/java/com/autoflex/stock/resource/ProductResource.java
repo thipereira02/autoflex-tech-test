@@ -1,7 +1,10 @@
 package com.autoflex.stock.resource;
 
 import com.autoflex.stock.entity.Product;
+import com.autoflex.stock.entity.ProductComposition;
+import com.autoflex.stock.entity.RawMaterial;
 import com.autoflex.stock.dto.DashboardStats;
+
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -51,7 +54,6 @@ public class ProductResource {
             throw new WebApplicationException("Product not found", 404);
         }
         
-        // Atualiza dados básicos
         entity.name = productData.name;
         entity.sellingPrice = productData.sellingPrice;
 
@@ -80,14 +82,40 @@ public class ProductResource {
     @GET
     @Path("/stats")
     public DashboardStats getStats() {
-        long count = Product.count();
-        
-        BigDecimal sum = Product.getEntityManager()
-            .createQuery("SELECT SUM(p.sellingPrice) FROM Product p", BigDecimal.class)
-            .getSingleResult();
-        
-        double totalValue = (sum != null) ? sum.doubleValue() : 0.0;
-        
-        return new DashboardStats(count, totalValue);
+        long totalProducts = Product.count();
+
+        List<Product> products = Product.listAll();
+        double maxOpportunityValue = 0.0;
+        long readyToProduceCount = 0;
+
+        for (Product product : products) {
+            if (product.composition == null || product.composition.isEmpty()) continue;
+
+            long maxPossible = Long.MAX_VALUE;
+
+            for (ProductComposition item : product.composition) {
+                double stock = item.rawMaterial.stockQuantity;
+                double required = item.requiredQuantity;
+                if (required <= 0) continue;
+                
+                long possible = (long) (stock / required);
+                if (possible < maxPossible) maxPossible = possible;
+            }
+
+            if (maxPossible == Long.MAX_VALUE) maxPossible = 0;
+
+            if (maxPossible > 0) {
+                readyToProduceCount++;
+            }
+
+            BigDecimal totalVal = product.sellingPrice.multiply(BigDecimal.valueOf(maxPossible));
+            if (totalVal.doubleValue() > maxOpportunityValue) {
+                maxOpportunityValue = totalVal.doubleValue();
+            }
+        }
+
+        long criticalStock = RawMaterial.find("stockQuantity <= 0").count();
+
+        return new DashboardStats(totalProducts, maxOpportunityValue, readyToProduceCount, criticalStock);
     }
 }

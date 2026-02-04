@@ -2,12 +2,14 @@ package com.autoflex.stock.dto;
 
 public class DashboardStats {
     public long totalProducts;
-    public double totalValue;
-    
-    public DashboardStats() {}
+    public double bestOpportunityValue;
+    public long productsReadyToProduce;
+    public long criticalStockItems;
 
-    public DashboardStats(long totalProducts, double totalValue) {
+    public DashboardStats(long totalProducts, double bestOpportunityValue, long productsReadyToProduce, long criticalStockItems) {
         this.totalProducts = totalProducts;
-        this.totalValue = totalValue;
+        this.bestOpportunityValue = bestOpportunityValue;
+        this.productsReadyToProduce = productsReadyToProduce;
+        this.criticalStockItems = criticalStockItems;
     }
 }

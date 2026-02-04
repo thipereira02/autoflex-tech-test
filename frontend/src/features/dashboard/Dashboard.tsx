@@ -1,92 +1,103 @@
 import { useEffect, useState } from 'react';
-import { BarChart3, TrendingUp, DollarSign, Package, Loader2 } from 'lucide-react';
-import { productService } from '../../services/productService';
-import type { DashboardStats } from '../../types/dashboard';
+import axios from 'axios';
+import { TrendingUp, AlertTriangle, CheckCircle2, Package, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+interface DashboardStats {
+  totalProducts: number;
+  bestOpportunityValue: number;
+  productsReadyToProduce: number;
+  criticalStockItems: number;
+}
 
 export function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalProducts: 0,
+    bestOpportunityValue: 0,
+    productsReadyToProduce: 0,
+    criticalStockItems: 0
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadStats() {
-      try {
-        const data = await productService.getStats();
-        setStats(data);
-      } catch (error) {
-        console.error("Erro ao carregar dashboard:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadStats();
+    axios.get<DashboardStats>('/api/products/stats')
+      .then(response => setStats(response.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const formatMoney = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
+  const formatMoney = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-blue-600" size={32} />
-      </div>
-    );
+    return <div className="p-8 text-slate-400">Carregando indicadores...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Dashboard</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-md">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total em Estoque</p>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-2">
-                {stats ? formatMoney(stats.totalValue) : 'R$ 0,00'}
-              </h3>
-            </div>
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-              <DollarSign className="text-emerald-600 dark:text-emerald-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-md">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Produtos Cadastrados</p>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-2">
-                {stats?.totalProducts || 0}
-              </h3>
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Package className="text-blue-600 dark:text-blue-400" size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-md opacity-70">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Saídas (Simulação)</p>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-2">0</h3>
-            </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <TrendingUp className="text-purple-600 dark:text-purple-400" size={24} />
-            </div>
-          </div>
-        </div>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Visão Geral da Fábrica</h1>
+        <p className="text-slate-500 dark:text-slate-400">Indicadores de produção em tempo real.</p>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-80 flex flex-col items-center justify-center text-slate-400 border-dashed border-2 dark:border-slate-700/50">
-        <BarChart3 size={64} className="mx-auto mb-4 opacity-20" />
-        <p className="font-medium">Gráfico de Movimentação</p>
-        <span className="text-sm opacity-60 mt-1">Disponível em breve</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg shadow-blue-600/20 transform hover:scale-[1.02] transition-all">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <TrendingUp size={24} className="text-white" />
+            </div>
+            <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded text-blue-50">Potencial</span>
+          </div>
+          <div className="space-y-1">
+            <p className="text-blue-100 text-sm font-medium">Melhor Oportunidade</p>
+            <h3 className="text-3xl font-bold">{formatMoney(stats.bestOpportunityValue)}</h3>
+            <p className="text-xs text-blue-200 mt-2">
+              Se produzir o item mais rentável agora.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex justify-between items-start mb-4">
+            <div className={`p-2 rounded-lg ${stats.productsReadyToProduce > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+              <CheckCircle2 size={24} />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Produtos Prontos</p>
+            <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+              {stats.productsReadyToProduce} <span className="text-lg text-slate-400 font-normal">/ {stats.totalProducts}</span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-2">
+              Itens com insumos suficientes.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex justify-between items-start mb-4">
+            <div className={`p-2 rounded-lg ${stats.criticalStockItems > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+              <AlertTriangle size={24} />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Insumos Zerados</p>
+            <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{stats.criticalStockItems}</h3>
+            <p className="text-xs text-slate-400 mt-2">
+              Matérias-primas esgotadas.
+            </p>
+          </div>
+        </div>
+
+        <Link to="/planning" className="group bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 border-dashed flex flex-col justify-center items-center text-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
+            <Package className="text-blue-600" size={24} />
+          </div>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition-colors">Ver Planejamento</h3>
+          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            Calcular produção <ArrowRight size={12} />
+          </p>
+        </Link>
       </div>
     </div>
   );
