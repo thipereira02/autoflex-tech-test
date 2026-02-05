@@ -21,7 +21,7 @@ vi.mock('react-redux', () => ({
 
 describe('ProductList Component', () => {
   
-  it('deve renderizar a lista de produtos vinda do Redux', async () => {
+  it('It should render the product list coming from Redux.', async () => {
     render(<ProductList />);
 
     expect(screen.getByText("Preço Venda")).toBeInTheDocument();
