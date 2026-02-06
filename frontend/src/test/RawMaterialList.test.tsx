@@ -4,6 +4,7 @@ import { RawMaterialList } from '../features/rawMaterials/RawMaterialList';
 
 vi.mock('react-redux', () => ({
   useDispatch: () => vi.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   useSelector: (selector: any) => selector({
     rawMaterials: {
       items: [

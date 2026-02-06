@@ -4,6 +4,7 @@ import { ProductList } from '../features/products/ProductList';
 
 vi.mock('react-redux', () => ({
   useDispatch: () => vi.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   useSelector: (selector: any) => selector({
     products: {
       items: [

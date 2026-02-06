@@ -16,6 +16,7 @@ describe('ProductionPlanList Component', () => {
       }
     ];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (axios.get as any).mockResolvedValue({ data: mockData });
 
     render(<ProductionPlanList />);

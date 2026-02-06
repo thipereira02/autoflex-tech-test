@@ -30,7 +30,7 @@ export function ProductList() {
           try {
             await dispatch(deleteProduct(product.id!)).unwrap();
             toast.success('Produto removido.');
-          } catch (error) {
+          } catch {
             toast.error('Erro ao remover produto.');
           }
         },

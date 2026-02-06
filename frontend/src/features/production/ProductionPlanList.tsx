@@ -13,6 +13,7 @@ export function ProductionPlanList() {
       const response = await axios.get<ProductionPlan[]>('/api/production-plan');
       setPlans(response.data);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Erro ao calcular plano", error);
     } finally {
       setLoading(false);

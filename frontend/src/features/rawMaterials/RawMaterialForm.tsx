@@ -57,6 +57,7 @@ export function RawMaterialForm({ onSuccess, onCancel, initialData }: RawMateria
       }
       onSuccess();
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
       toast.error('Erro ao salvar insumo.');
     } finally {

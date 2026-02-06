@@ -29,7 +29,7 @@ export function RawMaterialList() {
           try {
             await dispatch(deleteRawMaterial(item.id!)).unwrap();
             toast.success('Insumo removido.');
-          } catch (err) {
+          } catch {
             toast.error('Erro ao remover insumo.');
           }
         },

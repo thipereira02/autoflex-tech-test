@@ -50,17 +50,21 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
     setComposition(newList);
   };
 
-  const handleIngredientChange = (index: number, field: 'rawMaterial' | 'requiredQuantity', value: any) => {
-    const newList = [...composition];
-    
-    if (field === 'rawMaterial') {
-      const selected = rawMaterials.find(rm => rm.id === Number(value));
-      if (selected) newList[index].rawMaterial = selected;
-    } else {
-      newList[index].requiredQuantity = parseFloat(value) || 0;
-    }
-    
-    setComposition(newList);
+  const handleIngredientChange = (
+    index: number, 
+    field: 'rawMaterial' | 'requiredQuantity', 
+    value: string | number
+  ) => {
+      const newList = [...composition];
+      
+      if (field === 'rawMaterial') {
+        const selected = rawMaterials.find(rm => rm.id === Number(value));
+        if (selected) newList[index].rawMaterial = selected;
+      } else {
+        newList[index].requiredQuantity = Number(value) || 0;
+      }
+      
+      setComposition(newList);
   };
 
   async function handleSubmit(e: React.SyntheticEvent) {
@@ -103,6 +107,7 @@ export function ProductForm({ onSuccess, onCancel, initialData }: ProductFormPro
       onSuccess();
 
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
       toast.error('Erro ao salvar produto. Tente novamente.');
     } finally {

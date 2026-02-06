@@ -23,6 +23,7 @@ export function Dashboard() {
   useEffect(() => {
     axios.get<DashboardStats>('/api/products/stats')
       .then(response => setStats(response.data))
+      // eslint-disable-next-line no-console
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, Settings, LogOut, Sun, Moon, Menu, ChevronLeft, X, Layers, Factory } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -12,8 +12,11 @@ export function MainLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+  if (isMobileMenuOpen) {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -124,9 +127,7 @@ export function MainLayout() {
 
       <main className={`
         flex-1 transition-all duration-300 flex flex-col min-w-0
-        /* No mobile, margem zero (menu é overlay) */
         ml-0 
-        /* No desktop, margem igual à largura da sidebar */
         ${isDesktopSidebarOpen ? 'md:ml-72' : 'md:ml-20'}
       `}>
         
@@ -176,7 +177,15 @@ export function MainLayout() {
   );
 }
 
-function NavItem({ to, icon, label, isActive, isExpanded }: any) {
+interface NavItemProps {
+  to: string;             
+  icon: ReactNode;        
+  label: string;
+  isActive: boolean;
+  isExpanded: boolean;
+}
+
+function NavItem({ to, icon, label, isActive, isExpanded }: NavItemProps) {
   return (
     <Link
       to={to}
