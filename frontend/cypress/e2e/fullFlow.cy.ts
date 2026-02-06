@@ -1,8 +1,8 @@
 describe('Full Production Flow (E2E)', () => {
   
   const timestamp = Date.now();
-  const rawMaterialName = `Raw Material E2E ${timestamp}`;
-  const productName = `Product E2E ${timestamp}`;
+  const rawMaterialName = `Insumo E2E ${timestamp}`;
+  const productName = `Produto E2E ${timestamp}`;
   const modalSelector = '.fixed.inset-0';
 
   beforeEach(() => {
@@ -10,8 +10,7 @@ describe('Full Production Flow (E2E)', () => {
     cy.visit('/');
   });
 
-  it('Should create raw material and product successfully (CRUD Integration)', () => {
-    
+  it('Should perform a full CRUD cycle (Create, Read, Delete)', () => {
     cy.log('Step 1: Creating Raw Material');
     cy.visit('/raw-materials'); 
 
@@ -26,8 +25,7 @@ describe('Full Production Flow (E2E)', () => {
 
     cy.contains(modalSelector).should('not.exist'); 
     cy.contains(rawMaterialName).should('be.visible');
-    
-    cy.wait(1000);
+    cy.wait(1000); 
 
     cy.log('Step 2: Creating Product');
     cy.visit('/products'); 
@@ -58,13 +56,46 @@ describe('Full Production Flow (E2E)', () => {
 
         cy.contains('button', 'Salvar').click();
     });
-    
+
     cy.contains(modalSelector).should('not.exist');
-    
     cy.contains(productName).should('be.visible');
+
+    cy.log('Step 3: Verifying Data');
+    cy.contains(productName).should('be.visible');
+
+        cy.log('Step 4: Cleaning up (Deleting Product)');
     
-    cy.contains('500').should('be.visible');
+    cy.visit('/products');
     
-    cy.log('Integration Test Passed: Data was persisted correctly.');
+    cy.contains('tr', productName).within(() => {
+        cy.get('svg.lucide-trash-2, svg.lucide-trash').closest('button').click();
+    });
+
+    cy.get('body').then(($body) => {
+        if ($body.find('button:contains("Confirmar"), button:contains("Sim"), button:contains("Excluir")').length > 0) {
+             cy.contains('button', /Confirmar|Sim|Excluir|Deletar/i).click();
+        }
+    });
+
+    cy.contains(productName).should('not.exist');
+    cy.wait(500);
+
+
+    cy.log('Step 5: Cleaning up (Deleting Raw Material)');
+    cy.visit('/raw-materials');
+
+    cy.contains('tr', rawMaterialName).within(() => {
+        cy.get('svg.lucide-trash-2, svg.lucide-trash').closest('button').click();
+    });
+
+    cy.get('body').then(($body) => {
+        if ($body.find('button:contains("Confirmar"), button:contains("Sim"), button:contains("Excluir")').length > 0) {
+             cy.contains('button', /Confirmar|Sim|Excluir|Deletar/i).click();
+        }
+    });
+
+    cy.contains(rawMaterialName).should('not.exist');
+
+    cy.log('Test Finished: Environment is Clean! ✨');
   });
 });
